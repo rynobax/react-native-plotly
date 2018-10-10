@@ -11,6 +11,8 @@ Webview decodes and evals
 Plotly is now in the window!
 */
 
+const IOS_PLOTLY_LOAD_TIME = 1000;
+
 const errorHandlerFn = `
   window.onerror = function(message, source, lineno, colno, error) {
     document.getElementById('error').innerHTML += message + '\\n';
@@ -34,10 +36,28 @@ const debugFn = `
   };
 `;
 
+type UpdateProps = {
+  data: Data[];
+  layout: Layout | undefined;
+  config: Config | undefined;
+};
+
+type UpdateFunctions = {
+  react: (data: Data[], layout?: Layout, config?: Config) => void;
+  relayout: (layout: Layout) => void;
+};
+
 export interface PlotlyProps {
   data: Data[];
   layout?: Layout;
   config?: Config;
+
+  update: (
+    lastProps: UpdateProps,
+    nextProps: UpdateProps,
+    updateFns: UpdateFunctions
+  ) => void;
+
   debug?: Boolean;
 }
 
@@ -125,13 +145,22 @@ class Plotly extends React.Component<PlotlyProps> {
     `);
   };
 
-  updatePlot = (data: Data[], layout?: Layout, config?: Config) => {
+  plotlyReact = (data: Data[], layout?: Layout, config?: Config) => {
     this.invoke(`
       window.Plotly.react(
         'chart',
         ${JSON.stringify(data)},
         ${JSON.stringify(layout)},
         ${JSON.stringify(config)}
+      );
+    `);
+  };
+
+  plotlyRelayout = (layout: Layout) => {
+    this.invoke(`
+      window.Plotly.relayout(
+        'chart',
+        ${JSON.stringify(layout)}
       );
     `);
   };
@@ -154,12 +183,29 @@ class Plotly extends React.Component<PlotlyProps> {
   };
 
   componentDidMount() {
-    if (Platform.OS === 'ios') setTimeout(this.webviewLoaded, 1000);
+    if (Platform.OS === 'ios') setTimeout(this.webviewLoaded, IOS_PLOTLY_LOAD_TIME);
   }
 
   shouldComponentUpdate(nextProps: PlotlyProps) {
-    const { data, config, layout } = nextProps;
-    this.updatePlot(data, layout, config);
+    if (this.props.update) {
+      // Let the user call the update functions
+      this.props.update(
+        {
+          data: this.props.data,
+          layout: this.props.layout,
+          config: this.props.config,
+        },
+        {
+          data: nextProps.data,
+          layout: nextProps.layout,
+          config: nextProps.config,
+        },
+        { react: this.plotlyReact, relayout: this.plotlyRelayout }
+      );
+    } else {
+      // Default, just use Plotly.react
+      this.plotlyReact(nextProps.data, nextProps.layout, nextProps.config);
+    }
     return false;
   }
 
@@ -177,8 +223,8 @@ class Plotly extends React.Component<PlotlyProps> {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    alignSelf: 'stretch',
+    width: '100%',
+    height: '100%',
   },
 });
 

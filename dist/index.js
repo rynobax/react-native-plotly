@@ -8,6 +8,7 @@ Postmessage source code into webview
 Webview decodes and evals
 Plotly is now in the window!
 */
+var IOS_PLOTLY_LOAD_TIME = 1000;
 var errorHandlerFn = "\n  window.onerror = function(message, source, lineno, colno, error) {\n    document.getElementById('error').innerHTML += message + '\\n';\n  };\n";
 var postMessageHandler = "\n  document.addEventListener(\n    'message',\n    function(event) {\n      const decoded = atob(event.data);\n      eval(decoded);\n    },\n    false\n  );\n";
 var debugFn = "\n  window.DEBUG = function(message) {\n    document.getElementById('debug').innerHTML += message + '\\n';\n  };\n";
@@ -31,8 +32,11 @@ var Plotly = /** @class */ (function (_super) {
         _this.initialPlot = function (data, layout, config) {
             _this.invoke("\n      window.Plotly.newPlot(\n        'chart',\n        " + JSON.stringify(data) + ",\n        " + JSON.stringify(layout) + ",\n        " + JSON.stringify(config) + "\n      );\n    ");
         };
-        _this.updatePlot = function (data, layout, config) {
+        _this.plotlyReact = function (data, layout, config) {
             _this.invoke("\n      window.Plotly.react(\n        'chart',\n        " + JSON.stringify(data) + ",\n        " + JSON.stringify(layout) + ",\n        " + JSON.stringify(config) + "\n      );\n    ");
+        };
+        _this.plotlyRelayout = function (layout) {
+            _this.invoke("\n      window.Plotly.relayout(\n        'chart',\n        " + JSON.stringify(layout) + "\n      );\n    ");
         };
         _this.webviewLoaded = function () {
             if (Platform.OS === 'android') {
@@ -52,11 +56,25 @@ var Plotly = /** @class */ (function (_super) {
     }
     Plotly.prototype.componentDidMount = function () {
         if (Platform.OS === 'ios')
-            setTimeout(this.webviewLoaded, 1000);
+            setTimeout(this.webviewLoaded, IOS_PLOTLY_LOAD_TIME);
     };
     Plotly.prototype.shouldComponentUpdate = function (nextProps) {
-        var data = nextProps.data, config = nextProps.config, layout = nextProps.layout;
-        this.updatePlot(data, layout, config);
+        if (this.props.update) {
+            // Let the user call the update functions
+            this.props.update({
+                data: this.props.data,
+                layout: this.props.layout,
+                config: this.props.config,
+            }, {
+                data: nextProps.data,
+                layout: nextProps.layout,
+                config: nextProps.config,
+            }, { react: this.plotlyReact, relayout: this.plotlyRelayout });
+        }
+        else {
+            // Default, just use Plotly.react
+            this.plotlyReact(nextProps.data, nextProps.layout, nextProps.config);
+        }
         return false;
     };
     Plotly.prototype.render = function () {
@@ -66,8 +84,8 @@ var Plotly = /** @class */ (function (_super) {
 }(React.Component));
 var styles = StyleSheet.create({
     container: {
-        flex: 1,
-        alignSelf: 'stretch',
+        width: '100%',
+        height: '100%',
     },
 });
 export default Plotly;
