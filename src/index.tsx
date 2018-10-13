@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { StyleSheet, WebView, Platform } from 'react-native';
-import { Data, Layout, Config } from 'plotly.js';
 
 import PlotlyLib from './lib/PlotlyBasic';
+import { getDiff } from './diff';
 
 /*
 Base 64 encode source code
@@ -36,6 +36,10 @@ const debugFn = `
   };
 `;
 
+type Data = any;
+type Layout = any;
+type Config = any;
+
 type UpdateProps = {
   data: Data[];
   layout: Layout | undefined;
@@ -45,6 +49,7 @@ type UpdateProps = {
 type UpdateFunctions = {
   react: (data: Data[], layout?: Layout, config?: Config) => void;
   relayout: (layout: Layout) => void;
+  restyle: (data: Data, index: number) => void;
 };
 
 export interface PlotlyProps {
@@ -52,7 +57,7 @@ export interface PlotlyProps {
   layout?: Layout;
   config?: Config;
 
-  update: (
+  update?: (
     lastProps: UpdateProps,
     nextProps: UpdateProps,
     updateFns: UpdateFunctions
@@ -165,6 +170,16 @@ class Plotly extends React.Component<PlotlyProps> {
     `);
   };
 
+  plotlyRestyle = (data: Data, i: number) => {
+    this.invoke(`
+      window.Plotly.restyle(
+        'chart',
+        ${JSON.stringify(data)},
+        ${i}
+      );
+    `);
+  };
+
   webviewLoaded = () => {
     if (Platform.OS === 'android') {
       // On iOS these are included a <script> tag
@@ -183,7 +198,8 @@ class Plotly extends React.Component<PlotlyProps> {
   };
 
   componentDidMount() {
-    if (Platform.OS === 'ios') setTimeout(this.webviewLoaded, IOS_PLOTLY_LOAD_TIME);
+    if (Platform.OS === 'ios')
+      setTimeout(this.webviewLoaded, IOS_PLOTLY_LOAD_TIME);
   }
 
   shouldComponentUpdate(nextProps: PlotlyProps) {
@@ -200,11 +216,22 @@ class Plotly extends React.Component<PlotlyProps> {
           layout: nextProps.layout,
           config: nextProps.config,
         },
-        { react: this.plotlyReact, relayout: this.plotlyRelayout }
+        {
+          react: this.plotlyReact,
+          relayout: this.plotlyRelayout,
+          restyle: this.plotlyRestyle,
+        }
       );
     } else {
       // Default, just use Plotly.react
-      this.plotlyReact(nextProps.data, nextProps.layout, nextProps.config);
+      const dataDiff = getDiff(this.props.data, nextProps.data);
+      if (Array.isArray(dataDiff)) {
+        dataDiff.forEach((d, i) => {
+          if (d) this.plotlyRestyle(d, i);
+        });
+      }
+      const layoutDiff = getDiff(this.props.layout, nextProps.layout);
+      if (layoutDiff) this.plotlyRelayout(layoutDiff);
     }
     return false;
   }
