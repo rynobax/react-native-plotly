@@ -1,8 +1,9 @@
 {
   "name": "react-native-plotly",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Plotly.js in a react native webview",
   "main": "dist/index.js",
+  "typings": "dist/types/react-native-plotly.d.ts",
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc -w",
@@ -10,7 +11,13 @@
     "dev": "cd examples/basic && yarn && expo start",
     "precommit": "lint-staged"
   },
-  "keywords": [],
+  "keywords": [
+    "react-native",
+    "plotly",
+    "plotly.js",
+    "chart",
+    "graph"
+  ],
   "author": "Ryan Baxley",
   "license": "MIT",
   "dependencies": {

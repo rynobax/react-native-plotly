@@ -30,10 +30,10 @@ const debugFn = `
   };
 `;
 class Plotly extends React.Component {
-  constructor() {
-    super(...arguments);
-    this.chart = React.createRef();
-    this.html = `
+    constructor() {
+        super(...arguments);
+        this.chart = React.createRef();
+        this.html = `
     <html>
     <head>
         <meta charset="utf-8">
@@ -86,20 +86,19 @@ class Plotly extends React.Component {
     </script>
     </html>
     `;
-    this.debug = msg => {
-      this.invoke(
-        `document.getElementById('debug').innerHTML += \`${msg}\` + '\\n';`
-      );
-    };
-    this.invoke = str => {
-      if (this.chart && this.chart.current)
-        this.chart.current.injectJavaScript(`(function(){${str}})()`);
-    };
-    this.invokeEncoded = str => {
-      if (this.chart && this.chart.current) this.chart.current.postMessage(str);
-    };
-    this.initialPlot = (data, layout, config) => {
-      this.invoke(`
+        this.debug = (msg) => {
+            this.invoke(`document.getElementById('debug').innerHTML += \`${msg}\` + '\\n';`);
+        };
+        this.invoke = (str) => {
+            if (this.chart && this.chart.current)
+                this.chart.current.injectJavaScript(`(function(){${str}})()`);
+        };
+        this.invokeEncoded = (str) => {
+            if (this.chart && this.chart.current)
+                this.chart.current.postMessage(str);
+        };
+        this.initialPlot = (data, layout, config) => {
+            this.invoke(`
         window.Plotly.newPlot(
           'chart',
           ${JSON.stringify(data)},
@@ -107,9 +106,9 @@ class Plotly extends React.Component {
           ${JSON.stringify(config)}
         );
       `);
-    };
-    this.plotlyReact = (data, layout, config) => {
-      this.invoke(`
+        };
+        this.plotlyReact = (data, layout, config) => {
+            this.invoke(`
         window.Plotly.react(
           'chart',
           ${JSON.stringify(data)},
@@ -117,92 +116,84 @@ class Plotly extends React.Component {
           ${JSON.stringify(config)}
         );
       `);
-    };
-    this.plotlyRelayout = layout => {
-      this.invoke(`
+        };
+        this.plotlyRelayout = (layout) => {
+            this.invoke(`
         window.Plotly.relayout(
           'chart',
           ${JSON.stringify(layout)}
         );
       `);
-    };
-    this.plotlyRestyle = (data, i) => {
-      this.invoke(`
+        };
+        this.plotlyRestyle = (data, i) => {
+            this.invoke(`
         window.Plotly.restyle(
           'chart',
           ${JSON.stringify(data)},
           ${i}
         );
       `);
-    };
-    this.webviewLoaded = () => {
-      if (Platform.OS === 'android') {
-        // On iOS these are included a <script> tag
-        this.invoke(errorHandlerFn);
-        this.invoke(postMessageHandler);
-        if (this.props.debug) {
-          this.invoke(debugFn);
-        }
-      }
-      // Load plotly
-      this.invokeEncoded(PlotlyLib);
-      const { data, config, layout } = this.props;
-      this.initialPlot(data, layout, config);
-    };
-  }
-  componentDidMount() {
-    if (Platform.OS === 'ios')
-      setTimeout(this.webviewLoaded, IOS_PLOTLY_LOAD_TIME);
-  }
-  shouldComponentUpdate(nextProps) {
-    if (this.props.update) {
-      // Let the user call the update functions
-      this.props.update(
-        {
-          data: this.props.data,
-          layout: this.props.layout,
-          config: this.props.config,
-        },
-        {
-          data: nextProps.data,
-          layout: nextProps.layout,
-          config: nextProps.config,
-        },
-        {
-          react: this.plotlyReact,
-          relayout: this.plotlyRelayout,
-          restyle: this.plotlyRestyle,
-        }
-      );
-    } else {
-      // Default, just use Plotly.react
-      const dataDiff = getDiff(this.props.data, nextProps.data);
-      if (Array.isArray(dataDiff)) {
-        dataDiff.forEach((d, i) => {
-          if (d) this.plotlyRestyle(d, i);
-        });
-      }
-      const layoutDiff = getDiff(this.props.layout, nextProps.layout);
-      if (layoutDiff) this.plotlyRelayout(layoutDiff);
+        };
+        this.webviewLoaded = () => {
+            if (Platform.OS === 'android') {
+                // On iOS these are included a <script> tag
+                this.invoke(errorHandlerFn);
+                this.invoke(postMessageHandler);
+                if (this.props.debug) {
+                    this.invoke(debugFn);
+                }
+            }
+            // Load plotly
+            this.invokeEncoded(PlotlyLib);
+            const { data, config, layout } = this.props;
+            this.initialPlot(data, layout, config);
+        };
     }
-    return false;
-  }
-  render() {
-    return (
-      <WebView
-        ref={this.chart}
-        source={{ html: this.html }}
-        style={styles.container}
-        onLoad={this.webviewLoaded}
-      />
-    );
-  }
+    componentDidMount() {
+        if (Platform.OS === 'ios')
+            setTimeout(this.webviewLoaded, IOS_PLOTLY_LOAD_TIME);
+    }
+    shouldComponentUpdate(nextProps) {
+        if (this.props.update) {
+            // Let the user call the update functions
+            this.props.update({
+                data: this.props.data,
+                layout: this.props.layout,
+                config: this.props.config,
+            }, {
+                data: nextProps.data,
+                layout: nextProps.layout,
+                config: nextProps.config,
+            }, {
+                react: this.plotlyReact,
+                relayout: this.plotlyRelayout,
+                restyle: this.plotlyRestyle,
+            });
+        }
+        else {
+            // Default, just use Plotly.react
+            const dataDiff = getDiff(this.props.data, nextProps.data);
+            if (Array.isArray(dataDiff)) {
+                dataDiff.forEach((d, i) => {
+                    if (d)
+                        this.plotlyRestyle(d, i);
+                });
+            }
+            const layoutDiff = getDiff(this.props.layout, nextProps.layout);
+            if (layoutDiff)
+                this.plotlyRelayout(layoutDiff);
+        }
+        return false;
+    }
+    render() {
+        return (<WebView ref={this.chart} source={{ html: this.html }} style={styles.container} onLoad={this.webviewLoaded}/>);
+    }
 }
 const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    height: '100%',
-  },
+    container: {
+        width: '100%',
+        height: '100%',
+    },
 });
 export default Plotly;
 //# sourceMappingURL=plotly.js.map
