@@ -17,7 +17,10 @@ const downData = {
 };
 
 export default class App extends React.Component {
-  state = { data: [upData], layout: { title: 'hi' } };
+  state = {
+    data: [upData],
+    layout: { title: 'Plotly.js running in React Native!' },
+  };
 
   swapData = () => {
     if (this.state.data[0].__id === 'up') {
@@ -29,7 +32,7 @@ export default class App extends React.Component {
 
   update = (_, { data, layout, config }, plotly) => {
     plotly.react(data, layout, config);
-  }
+  };
 
   render() {
     return (
