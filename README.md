@@ -1,11 +1,10 @@
 ## react-native-plotly
 
-Use [plotly.js](https://plot.ly/javascript/) in react native!
-(plotly.js basic v1.43.2)
+Use [plotly.js](https://plot.ly/javascript/) in react native! (plotly.js basic v1.43.2)
 
 ## Installation
 
-`$ npm install react-plotly.js plotly.js`
+`$ npm install react-native-plotly`
 
 ## How
 
@@ -42,9 +41,9 @@ render() {
 
 | key     | value            | description                                                                 |
 | ------- | ---------------- | --------------------------------------------------------------------------- |
-| data    | plotly.js Data[] | (required) Data to graph                                                    |
-| layout  | plotly.js Layout |                                                                             |
-| config? | plotly.js Config |                                                                             |
+| data    | plotly.js Data[] | (required) Chart data                                                       |
+| layout  | plotly.js Layout | Chart layout                                                                |
+| config? | plotly.js Config | Chart config                                                                |
 | debug?  | boolean          | If true, if any errors occur in the webview, they will show up on the chart |
 | update? | fn()             | described below                                                             |
 
@@ -57,11 +56,13 @@ function update(
   nextProps: UpdateProps,
   updateFns: UpdateFunctions
 );
+
 type UpdateProps = {
   data: Data[];
   layout: Layout | undefined;
   config: Config | undefined;
 };
+
 type UpdateFunctions = {
   react: (data: Data[], layout?: Layout, config?: Config) => void;
   relayout: (layout: Layout) => void;
@@ -70,7 +71,9 @@ type UpdateFunctions = {
 ```
 
 `currentProps` is the current `data`, `layout`, and `config` props
+
 `nextProps` is the upcoming `data`, `layout`, and `config` props
+
 `updateFns` is an object with three properties: `react`, `relayout` and `restyle`. You can call these functions to update the chart. Details about what these functions do can be found [here](https://plot.ly/javascript/plotlyjs-function-reference/)
 
 ## TODO
