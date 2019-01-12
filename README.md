@@ -75,11 +75,3 @@ type UpdateFunctions = {
 `nextProps` is the upcoming `data`, `layout`, and `config` props
 
 `updateFns` is an object with three properties: `react`, `relayout` and `restyle`. You can call these functions to update the chart. Details about what these functions do can be found [here](https://plot.ly/javascript/plotlyjs-function-reference/)
-
-## TODO
-
-- Better solution for detecting iOS webview being loaded
-  - The webView `onLoaded` did not work for iOS, so instead it uses a 1 second setTimeout after the initial mount
-- Add the ability to use the full bundle
-  - Right now sending the full bundle code to the webview does not work
-- Add expo snack example
