@@ -36,8 +36,11 @@ const debugFn = `
   };
 `;
 
+// tslint:disable-next-line no-any
 type Data = any;
+// tslint:disable-next-line no-any
 type Layout = any;
+// tslint:disable-next-line no-any
 type Config = any;
 
 type UpdateProps = {
