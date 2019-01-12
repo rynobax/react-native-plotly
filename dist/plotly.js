@@ -1,4 +1,3 @@
-import * as tslib_1 from 'tslib';
 import * as React from 'react';
 import { StyleSheet, WebView, Platform } from 'react-native';
 import PlotlyLib from './lib/PlotlyBasic';
@@ -9,102 +8,153 @@ Postmessage source code into webview
 Webview decodes and evals
 Plotly is now in the window!
 */
-var IOS_PLOTLY_LOAD_TIME = 1000;
-var errorHandlerFn =
-  "\n  window.onerror = function(message, source, lineno, colno, error) {\n    document.getElementById('error').innerHTML += message + '\\n';\n  };\n";
-var postMessageHandler =
-  "\n  document.addEventListener(\n    'message',\n    function(event) {\n      const decoded = atob(event.data);\n      eval(decoded);\n    },\n    false\n  );\n";
-var debugFn =
-  "\n  window.DEBUG = function(message) {\n    document.getElementById('debug').innerHTML += message + '\\n';\n  };\n";
-var Plotly = /** @class */ (function(_super) {
-  tslib_1.__extends(Plotly, _super);
-  function Plotly() {
-    var _this = (_super !== null && _super.apply(this, arguments)) || this;
-    _this.chart = React.createRef();
-    _this.html =
-      '\n    <html>\n    <head>\n        <meta charset="utf-8">\n        <meta http-equiv="Content-type" content="text/html; charset=utf-8">\n        <meta name="viewport" content="width=device-width, initial-scale=1">\n        <style type="text/css">\n        body {\n          margin: 0;\n          padding: 0;\n          width: 100vw;\n          height: 100vh;\n        }\n        #chart {\n          width: 100vw;\n          height: 100vh;\n        }\n        #error {\n          position: fixed;\n          top: 10vh;\n          max-width: 100vw;\n          max-height: 40vh;\n          overflow-y: scroll;\n          background: pink;\n          white-space: pre-wrap;\n        }\n        #debug {\n          position: fixed;\n          top: 50vh;\n          max-width: 100vw;\n          max-height: 40vh;\n          overflow-y: scroll;\n          background: #eaeaea;\n          white-space: pre-wrap;\n          zIndex: 1000;\n        }\n        </style>\n    </head>\n    \n    <body >\n      <div id="chart"></div>\n      <pre id="error"></pre>\n      <pre id="debug"></pre>\n    </body>\n  \n    <script>\n      /* This only runs on iOS, on android it is posted */\n      ' +
-      errorHandlerFn +
-      '\n      ' +
-      debugFn +
-      '\n      ' +
-      postMessageHandler +
-      '\n    </script>\n    </html>\n    ';
-    _this.debug = function(msg) {
-      _this.invoke(
-        "document.getElementById('debug').innerHTML += `" + msg + "` + '\\n';"
+const IOS_PLOTLY_LOAD_TIME = 1000;
+const errorHandlerFn = `
+  window.onerror = function(message, source, lineno, colno, error) {
+    document.getElementById('error').innerHTML += message + '\\n';
+  };
+`;
+const postMessageHandler = `
+  document.addEventListener(
+    'message',
+    function(event) {
+      const decoded = atob(event.data);
+      eval(decoded);
+    },
+    false
+  );
+`;
+const debugFn = `
+  window.DEBUG = function(message) {
+    document.getElementById('debug').innerHTML += message + '\\n';
+  };
+`;
+class Plotly extends React.Component {
+  constructor() {
+    super(...arguments);
+    this.chart = React.createRef();
+    this.html = `
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style type="text/css">
+        body {
+          margin: 0;
+          padding: 0;
+          width: 100vw;
+          height: 100vh;
+        }
+        #chart {
+          width: 100vw;
+          height: 100vh;
+        }
+        #error {
+          position: fixed;
+          top: 10vh;
+          max-width: 100vw;
+          max-height: 40vh;
+          overflow-y: scroll;
+          background: pink;
+          white-space: pre-wrap;
+        }
+        #debug {
+          position: fixed;
+          top: 50vh;
+          max-width: 100vw;
+          max-height: 40vh;
+          overflow-y: scroll;
+          background: #eaeaea;
+          white-space: pre-wrap;
+          zIndex: 1000;
+        }
+        </style>
+    </head>
+    
+    <body >
+      <div id="chart"></div>
+      <pre id="error"></pre>
+      <pre id="debug"></pre>
+    </body>
+  
+    <script>
+      /* This only runs on iOS, on android it is posted */
+      ${errorHandlerFn}
+      ${debugFn}
+      ${postMessageHandler}
+    </script>
+    </html>
+    `;
+    this.debug = msg => {
+      this.invoke(
+        `document.getElementById('debug').innerHTML += \`${msg}\` + '\\n';`
       );
     };
-    _this.invoke = function(str) {
-      if (_this.chart && _this.chart.current)
-        _this.chart.current.injectJavaScript('(function(){' + str + '})()');
+    this.invoke = str => {
+      if (this.chart && this.chart.current)
+        this.chart.current.injectJavaScript(`(function(){${str}})()`);
     };
-    _this.invokeEncoded = function(str) {
-      if (_this.chart && _this.chart.current)
-        _this.chart.current.postMessage(str);
+    this.invokeEncoded = str => {
+      if (this.chart && this.chart.current) this.chart.current.postMessage(str);
     };
-    _this.initialPlot = function(data, layout, config) {
-      _this.invoke(
-        "\n        window.Plotly.newPlot(\n          'chart',\n          " +
-          JSON.stringify(data) +
-          ',\n          ' +
-          JSON.stringify(layout) +
-          ',\n          ' +
-          JSON.stringify(config) +
-          '\n        );\n      '
-      );
+    this.initialPlot = (data, layout, config) => {
+      this.invoke(`
+        window.Plotly.newPlot(
+          'chart',
+          ${JSON.stringify(data)},
+          ${JSON.stringify(layout)},
+          ${JSON.stringify(config)}
+        );
+      `);
     };
-    _this.plotlyReact = function(data, layout, config) {
-      _this.invoke(
-        "\n        window.Plotly.react(\n          'chart',\n          " +
-          JSON.stringify(data) +
-          ',\n          ' +
-          JSON.stringify(layout) +
-          ',\n          ' +
-          JSON.stringify(config) +
-          '\n        );\n      '
-      );
+    this.plotlyReact = (data, layout, config) => {
+      this.invoke(`
+        window.Plotly.react(
+          'chart',
+          ${JSON.stringify(data)},
+          ${JSON.stringify(layout)},
+          ${JSON.stringify(config)}
+        );
+      `);
     };
-    _this.plotlyRelayout = function(layout) {
-      _this.invoke(
-        "\n        window.Plotly.relayout(\n          'chart',\n          " +
-          JSON.stringify(layout) +
-          '\n        );\n      '
-      );
+    this.plotlyRelayout = layout => {
+      this.invoke(`
+        window.Plotly.relayout(
+          'chart',
+          ${JSON.stringify(layout)}
+        );
+      `);
     };
-    _this.plotlyRestyle = function(data, i) {
-      _this.invoke(
-        "\n        window.Plotly.restyle(\n          'chart',\n          " +
-          JSON.stringify(data) +
-          ',\n          ' +
-          i +
-          '\n        );\n      '
-      );
+    this.plotlyRestyle = (data, i) => {
+      this.invoke(`
+        window.Plotly.restyle(
+          'chart',
+          ${JSON.stringify(data)},
+          ${i}
+        );
+      `);
     };
-    _this.webviewLoaded = function() {
+    this.webviewLoaded = () => {
       if (Platform.OS === 'android') {
         // On iOS these are included a <script> tag
-        _this.invoke(errorHandlerFn);
-        _this.invoke(postMessageHandler);
-        if (_this.props.debug) {
-          _this.invoke(debugFn);
+        this.invoke(errorHandlerFn);
+        this.invoke(postMessageHandler);
+        if (this.props.debug) {
+          this.invoke(debugFn);
         }
       }
       // Load plotly
-      _this.invokeEncoded(PlotlyLib);
-      var _a = _this.props,
-        data = _a.data,
-        config = _a.config,
-        layout = _a.layout;
-      _this.initialPlot(data, layout, config);
+      this.invokeEncoded(PlotlyLib);
+      const { data, config, layout } = this.props;
+      this.initialPlot(data, layout, config);
     };
-    return _this;
   }
-  Plotly.prototype.componentDidMount = function() {
+  componentDidMount() {
     if (Platform.OS === 'ios')
       setTimeout(this.webviewLoaded, IOS_PLOTLY_LOAD_TIME);
-  };
-  Plotly.prototype.shouldComponentUpdate = function(nextProps) {
-    var _this = this;
+  }
+  shouldComponentUpdate(nextProps) {
     if (this.props.update) {
       // Let the user call the update functions
       this.props.update(
@@ -126,18 +176,18 @@ var Plotly = /** @class */ (function(_super) {
       );
     } else {
       // Default, just use Plotly.react
-      var dataDiff = getDiff(this.props.data, nextProps.data);
+      const dataDiff = getDiff(this.props.data, nextProps.data);
       if (Array.isArray(dataDiff)) {
-        dataDiff.forEach(function(d, i) {
-          if (d) _this.plotlyRestyle(d, i);
+        dataDiff.forEach((d, i) => {
+          if (d) this.plotlyRestyle(d, i);
         });
       }
-      var layoutDiff = getDiff(this.props.layout, nextProps.layout);
+      const layoutDiff = getDiff(this.props.layout, nextProps.layout);
       if (layoutDiff) this.plotlyRelayout(layoutDiff);
     }
     return false;
-  };
-  Plotly.prototype.render = function() {
+  }
+  render() {
     return (
       <WebView
         ref={this.chart}
@@ -146,10 +196,9 @@ var Plotly = /** @class */ (function(_super) {
         onLoad={this.webviewLoaded}
       />
     );
-  };
-  return Plotly;
-})(React.Component);
-var styles = StyleSheet.create({
+  }
+}
+const styles = StyleSheet.create({
   container: {
     width: '100%',
     height: '100%',

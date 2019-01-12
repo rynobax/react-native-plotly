@@ -1,9 +1,9 @@
 import { diff } from 'deep-diff';
 import { set } from 'lodash';
-export var getDiff = function(prev, cur) {
+export const getDiff = (prev, cur) => {
   if (prev && cur) {
     if (Array.isArray(cur) && Array.isArray(prev)) {
-      return cur.map(function(c, i) {
+      return cur.map((c, i) => {
         return getObjectDiff(prev[i], c);
       });
     }
@@ -11,24 +11,24 @@ export var getDiff = function(prev, cur) {
   }
   return null;
 };
-var getObjectDiff = function(prev, cur) {
+const getObjectDiff = (prev, cur) => {
   if (prev && cur) {
-    var diffs = diff(prev, cur);
+    const diffs = diff(prev, cur);
     if (diffs) {
-      var layoutChanges_1 = {};
-      diffs.forEach(function(d) {
+      const layoutChanges = {};
+      diffs.forEach(d => {
         if (['E', 'A', 'N'].includes(d.kind)) {
-          var path = d.path.reduce(function(p, c) {
+          const path = d.path.reduce((p, c) => {
             if (p === '') return c;
             if (typeof c === 'string') return p + '.' + c;
             else return p + '[' + String(c) + ']';
           }, '');
-          layoutChanges_1[path] = d.rhs;
+          layoutChanges[path] = d.rhs;
         } else if (d.kind === 'D') {
-          set(layoutChanges_1, d.path, undefined);
+          set(layoutChanges, d.path, undefined);
         }
       });
-      return layoutChanges_1;
+      return layoutChanges;
     }
   }
   return null;
