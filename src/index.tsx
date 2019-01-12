@@ -61,7 +61,7 @@ export interface PlotlyProps {
   config?: Config;
 
   update?: (
-    lastProps: UpdateProps,
+    currentProps: UpdateProps,
     nextProps: UpdateProps,
     updateFns: UpdateFunctions
   ) => void;
@@ -88,7 +88,6 @@ class Plotly extends React.Component<PlotlyProps> {
       #chart {
         width: 100vw;
         height: 100vh;
-        ${this.props.debug ? 'background: papayawhip;' : ''}
       }
       #error {
         position: fixed;
