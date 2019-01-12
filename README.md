@@ -79,3 +79,4 @@ type UpdateFunctions = {
   - The webView `onLoaded` did not work for iOS, so instead it uses a 1 second setTimeout after the initial mount
 - Add the ability to use the full bundle
   - Right now sending the full bundle code to the webview does not work
+- Add expo snack example
