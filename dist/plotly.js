@@ -33,6 +33,8 @@ class Plotly extends React.Component {
     constructor() {
         super(...arguments);
         this.chart = React.createRef();
+        // As of 2/5/2019 it seems that using a # in the html causes the css
+        // parsing to crash on Android
         this.html = `
     <html>
     <head>
@@ -46,11 +48,12 @@ class Plotly extends React.Component {
           width: 100vw;
           height: 100vh;
         }
-        #chart {
+        .chart {
           width: 100vw;
           height: 100vh;
+          ${this.props.debug ? 'background: papayawhip;' : ''}
         }
-        #error {
+        .error {
           position: fixed;
           top: 10vh;
           max-width: 100vw;
@@ -59,13 +62,13 @@ class Plotly extends React.Component {
           background: pink;
           white-space: pre-wrap;
         }
-        #debug {
+        .debug {
           position: fixed;
           top: 50vh;
           max-width: 100vw;
           max-height: 40vh;
           overflow-y: scroll;
-          background: #eaeaea;
+          background: rgb(234, 234, 234);
           white-space: pre-wrap;
           zIndex: 1000;
         }
@@ -73,11 +76,11 @@ class Plotly extends React.Component {
     </head>
     
     <body >
-      <div id="chart"></div>
-      <pre id="error"></pre>
-      <pre id="debug"></pre>
+      <div id="chart" class="chart"></div>
+      <pre id="error" class="error"></pre>
+      <pre id="debug" class="debug"></pre>
     </body>
-  
+
     <script>
       /* This only runs on iOS, on android it is posted */
       ${errorHandlerFn}
