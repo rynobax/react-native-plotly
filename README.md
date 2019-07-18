@@ -29,10 +29,13 @@ render() {
   const layout = { title: 'My cool chart!' };
 
   return (
-    <Plotly
-      data={data}
-      layout={layout}
-    />
+    // Make sure to wrap the Plotly component in a View for the chart to fill
+    <View style={{ flex: 1 }}>
+      <Plotly
+        data={data}
+        layout={layout}
+      />
+    </View>
   )
 }
 ```
