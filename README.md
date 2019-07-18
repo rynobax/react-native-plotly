@@ -30,8 +30,8 @@ render() {
 
   return (
     <Plotly
-      data={this.state.data}
-      layout={this.state.layout}
+      data={data}
+      layout={layout}
     />
   )
 }
