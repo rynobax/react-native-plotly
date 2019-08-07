@@ -1,20 +1,25 @@
 {
-  "name": "basic",
   "main": "node_modules/expo/AppEntry.js",
-  "private": true,
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "eject": "expo eject"
+    "web": "expo start --web",
+    "eject": "expo eject",
+    "postinstall": "rimraf node_modules/react-native-plotly/node_modules/react-native && rimraf node_modules/react-native-plotly/node_modules/@types && rimraf node_modules/react-native-plotly/node_modules/examples && rimraf node_modules/react-native-plotly/node_modules/react-native-gesture-handler && rimraf node_modules/react-native-plotly/node_modules/react && rimraf node_modules/react-native-plotly/examples"
   },
   "dependencies": {
-    "expo": "^30.0.1",
-    "react": "16.3.1",
-    "react-native": "^0.55.0",
-    "react-native-plotly": "link:../.."
+    "expo": "^34.0.1",
+    "postinstall-postinstall": "^2.0.0",
+    "react": "16.8.3",
+    "react-dom": "^16.8.6",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-34.0.0.tar.gz",
+    "react-native-plotly": "file:../..",
+    "react-native-web": "^0.11.4",
+    "rimraf": "^2.6.3"
   },
   "devDependencies": {
-    "expo-cli": "^2.6.14"
-  }
+    "babel-preset-expo": "^6.0.0"
+  },
+  "private": true
 }
