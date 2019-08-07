@@ -29,13 +29,10 @@ render() {
   const layout = { title: 'My cool chart!' };
 
   return (
-    // Make sure to wrap the Plotly component in a View for the chart to fill
-    <View style={{ flex: 1 }}>
-      <Plotly
-        data={data}
-        layout={layout}
-      />
-    </View>
+    <Plotly
+      data={data}
+      layout={layout}
+    />
   )
 }
 ```
@@ -47,6 +44,7 @@ render() {
 | data    | plotly.js Data[] | (required) Chart data                                                       |
 | layout  | plotly.js Layout | Chart layout                                                                |
 | config? | plotly.js Config | Chart config                                                                |
+| style?  | style            | Style to be applied to the WebView (default is { flex: 1 })                 |
 | debug?  | boolean          | If true, if any errors occur in the webview, they will show up on the chart |
 | update? | fn()             | described below                                                             |
 

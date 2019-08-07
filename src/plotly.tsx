@@ -1,5 +1,11 @@
 import * as React from 'react';
-import { StyleSheet, WebView, Platform } from 'react-native';
+import {
+  StyleSheet,
+  WebView,
+  Platform,
+  StyleProp,
+  ViewStyle,
+} from 'react-native';
 
 import PlotlyLib from './lib/PlotlyBasic';
 import { getDiff } from './diff';
@@ -67,6 +73,8 @@ export interface PlotlyProps {
   ) => void;
 
   debug?: Boolean;
+
+  style?: StyleProp<ViewStyle>;
 }
 
 class Plotly extends React.Component<PlotlyProps> {
@@ -246,7 +254,7 @@ class Plotly extends React.Component<PlotlyProps> {
       <WebView
         ref={this.chart}
         source={{ html: this.html }}
-        style={styles.container}
+        style={this.props.style || styles.container}
         onLoad={this.webviewLoaded}
       />
     );
@@ -254,10 +262,7 @@ class Plotly extends React.Component<PlotlyProps> {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    height: '100%',
-  },
+  container: { flex: 1 },
 });
 
 export default Plotly;
