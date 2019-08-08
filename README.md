@@ -45,6 +45,7 @@ render() {
 | layout  | plotly.js Layout | Chart layout                                                                |
 | config? | plotly.js Config | Chart config                                                                |
 | style?  | style            | Style to be applied to the WebView (default is { flex: 1 })                 |
+| onLoad? | fn()             | Called when the plot loads for the first time                               |
 | debug?  | boolean          | If true, if any errors occur in the webview, they will show up on the chart |
 | update? | fn()             | described below                                                             |
 
