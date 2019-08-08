@@ -9,7 +9,8 @@ import {
   WebViewMessageEventData,
 } from 'react-native';
 
-import PlotlyLib from './lib/PlotlyBasic';
+import PlotlyBasic from './lib/PlotlyBasic';
+import PlotlyFull from './lib/PlotlyFull';
 import { getDiff } from './diff';
 
 /*
@@ -83,6 +84,8 @@ export interface PlotlyProps {
   style?: StyleProp<ViewStyle>;
 
   onLoad?: () => void;
+
+  enableFullPlotly?: boolean;
 }
 
 class Plotly extends React.Component<PlotlyProps> {
@@ -214,7 +217,7 @@ class Plotly extends React.Component<PlotlyProps> {
     }
 
     // Load plotly
-    this.invokeEncoded(PlotlyLib);
+    this.invokeEncoded(this.props.enableFullPlotly ? PlotlyFull : PlotlyBasic);
 
     const { data, config, layout } = this.props;
     this.initialPlot(data, layout, config);
