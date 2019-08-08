@@ -39,15 +39,16 @@ render() {
 
 ## Props
 
-| key     | value            | description                                                                 |
-| ------- | ---------------- | --------------------------------------------------------------------------- |
-| data    | plotly.js Data[] | (required) Chart data                                                       |
-| layout  | plotly.js Layout | Chart layout                                                                |
-| config? | plotly.js Config | Chart config                                                                |
-| style?  | style            | Style to be applied to the WebView (default is { flex: 1 })                 |
-| onLoad? | fn()             | Called when the plot loads for the first time                               |
-| debug?  | boolean          | If true, if any errors occur in the webview, they will show up on the chart |
-| update? | fn()             | described below                                                             |
+| key               | value            | description                                                                                                                                |
+| ----------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| data              | plotly.js Data[] | (required) Chart data                                                                                                                      |
+| layout            | plotly.js Layout | Chart layout                                                                                                                               |
+| config?           | plotly.js Config | Chart config                                                                                                                               |
+| style?            | style            | Style to be applied to the WebView (default is { flex: 1 })                                                                                |
+| onLoad?           | fn()             | Called when the plot loads for the first time                                                                                              |
+| enableFullPlotly? | boolean          | Setting this to true will load the full plotly bundle instead of the basic bundle. May cause problems, particularly on versions of RN < 60 |
+| debug?            | boolean          | If true, if any errors occur in the webview, they will show up on the chart                                                                |
+| update?           | fn()             | described below                                                                                                                            |
 
 By default, every time the Plotly component's props change, the `data`, `layout`, and `config` props are all diffed with their previous values, and if there is a difference `restyle` and/or `relayout` are called.
 If you want to override this behavior, you can pass a function as the `update` prop, and manually call the plotly update functions. The `update` function signature is:
