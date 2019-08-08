@@ -5,6 +5,8 @@ import {
   Platform,
   StyleProp,
   ViewStyle,
+  NativeSyntheticEvent,
+  WebViewMessageEventData,
 } from 'react-native';
 
 import PlotlyLib from './lib/PlotlyBasic';
@@ -18,6 +20,10 @@ Plotly is now in the window!
 */
 
 const IOS_PLOTLY_LOAD_TIME = 1000;
+
+const messages = {
+  CHART_LOADED: 'CHART_LOADED',
+};
 
 const errorHandlerFn = `
   window.onerror = function(message, source, lineno, colno, error) {
@@ -75,6 +81,8 @@ export interface PlotlyProps {
   debug?: Boolean;
 
   style?: StyleProp<ViewStyle>;
+
+  onLoad?: () => void;
 }
 
 class Plotly extends React.Component<PlotlyProps> {
@@ -159,7 +167,9 @@ class Plotly extends React.Component<PlotlyProps> {
           ${JSON.stringify(data)},
           ${JSON.stringify(layout)},
           ${JSON.stringify(config)}
-        );
+        ).then(function() {
+          window.postMessage('${messages.CHART_LOADED}');
+        });
       `);
   };
 
@@ -210,6 +220,18 @@ class Plotly extends React.Component<PlotlyProps> {
     this.initialPlot(data, layout, config);
   };
 
+  onMessage = (event: NativeSyntheticEvent<WebViewMessageEventData>) => {
+    switch (event.nativeEvent.data) {
+      case messages.CHART_LOADED:
+        if (this.props.onLoad) this.props.onLoad();
+        break;
+      default:
+        if (this.debug)
+          console.error(`Unknown event ${event.nativeEvent.data}`);
+        break;
+    }
+  };
+
   componentDidMount() {
     if (Platform.OS === 'ios')
       setTimeout(this.webviewLoaded, IOS_PLOTLY_LOAD_TIME);
@@ -256,6 +278,7 @@ class Plotly extends React.Component<PlotlyProps> {
         source={{ html: this.html }}
         style={this.props.style || styles.container}
         onLoad={this.webviewLoaded}
+        onMessage={this.onMessage}
       />
     );
   }
