@@ -1,6 +1,7 @@
 import * as React from 'react';
-import { StyleSheet, WebView, Platform } from 'react-native';
-import PlotlyLib from './lib/PlotlyBasic';
+import { StyleSheet, WebView, Platform, } from 'react-native';
+import PlotlyBasic from './lib/PlotlyBasic';
+import PlotlyFull from './lib/PlotlyFull';
 import { getDiff } from './diff';
 /*
 Base 64 encode source code
@@ -9,6 +10,9 @@ Webview decodes and evals
 Plotly is now in the window!
 */
 const IOS_PLOTLY_LOAD_TIME = 1000;
+const messages = {
+    CHART_LOADED: 'CHART_LOADED',
+};
 const errorHandlerFn = `
   window.onerror = function(message, source, lineno, colno, error) {
     document.getElementById('error').innerHTML += message + '\\n';
@@ -107,7 +111,9 @@ class Plotly extends React.Component {
           ${JSON.stringify(data)},
           ${JSON.stringify(layout)},
           ${JSON.stringify(config)}
-        );
+        ).then(function() {
+          window.postMessage('${messages.CHART_LOADED}');
+        });
       `);
         };
         this.plotlyReact = (data, layout, config) => {
@@ -147,9 +153,21 @@ class Plotly extends React.Component {
                 }
             }
             // Load plotly
-            this.invokeEncoded(PlotlyLib);
+            this.invokeEncoded(this.props.enableFullPlotly ? PlotlyFull : PlotlyBasic);
             const { data, config, layout } = this.props;
             this.initialPlot(data, layout, config);
+        };
+        this.onMessage = (event) => {
+            switch (event.nativeEvent.data) {
+                case messages.CHART_LOADED:
+                    if (this.props.onLoad)
+                        this.props.onLoad();
+                    break;
+                default:
+                    if (this.debug)
+                        console.error(`Unknown event ${event.nativeEvent.data}`);
+                    break;
+            }
         };
     }
     componentDidMount() {
@@ -189,14 +207,11 @@ class Plotly extends React.Component {
         return false;
     }
     render() {
-        return (<WebView ref={this.chart} source={{ html: this.html }} style={styles.container} onLoad={this.webviewLoaded}/>);
+        return (<WebView ref={this.chart} source={{ html: this.html }} style={this.props.style || styles.container} onLoad={this.webviewLoaded} onMessage={this.onMessage}/>);
     }
 }
 const styles = StyleSheet.create({
-    container: {
-        width: '100%',
-        height: '100%',
-    },
+    container: { flex: 1 },
 });
 export default Plotly;
 //# sourceMappingURL=plotly.js.map
