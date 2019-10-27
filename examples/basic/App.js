@@ -45,6 +45,7 @@ export default class App extends React.Component {
             data={this.state.data}
             layout={this.state.layout}
             update={this.update}
+            onLoad={() => console.log('loaded')}
             debug
           />
         </View>

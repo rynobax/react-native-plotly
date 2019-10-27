@@ -1,16 +1,8 @@
-import * as React from 'react';
-import {
-  StyleSheet,
-  WebView,
-  Platform,
-  StyleProp,
-  ViewStyle,
-  NativeSyntheticEvent,
-  WebViewMessageEventData,
-} from 'react-native';
+import React from 'react';
+import { StyleSheet, Platform, StyleProp, ViewStyle } from 'react-native';
+import { WebView, WebViewMessageEvent } from 'react-native-webview';
 
 import PlotlyBasic from './lib/PlotlyBasic';
-import PlotlyFull from './lib/PlotlyFull';
 import { getDiff } from './diff';
 
 /*
@@ -32,28 +24,17 @@ const errorHandlerFn = `
   };
 `;
 
-const postMessageHandler = `
-  document.addEventListener(
-    'message',
-    function(event) {
-      const decoded = atob(event.data);
-      eval(decoded);
-    },
-    false
-  );
-`;
-
 const debugFn = `
   window.DEBUG = function(message) {
     document.getElementById('debug').innerHTML += message + '\\n';
   };
 `;
 
-// tslint:disable-next-line no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Data = any;
-// tslint:disable-next-line no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Layout = any;
-// tslint:disable-next-line no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Config = any;
 
 type UpdateProps = {
@@ -79,17 +60,17 @@ export interface PlotlyProps {
     updateFns: UpdateFunctions
   ) => void;
 
-  debug?: Boolean;
+  debug?: boolean;
 
   style?: StyleProp<ViewStyle>;
 
   onLoad?: () => void;
-
-  enableFullPlotly?: boolean;
 }
 
 class Plotly extends React.Component<PlotlyProps> {
   chart = React.createRef<WebView>();
+  webviewHasLoaded = false;
+  plotlyHasLoaded = false;
 
   // As of 2/5/2019 it seems that using a # in the html causes the css
   // parsing to crash on Android
@@ -138,12 +119,10 @@ class Plotly extends React.Component<PlotlyProps> {
       <pre id="error" class="error"></pre>
       <pre id="debug" class="debug"></pre>
     </body>
-
     <script>
       /* This only runs on iOS, on android it is posted */
       ${errorHandlerFn}
       ${debugFn}
-      ${postMessageHandler}
     </script>
     </html>
     `;
@@ -160,7 +139,7 @@ class Plotly extends React.Component<PlotlyProps> {
   };
 
   invokeEncoded = (str: string) => {
-    if (this.chart && this.chart.current) this.chart.current.postMessage(str);
+    this.invoke(`eval(atob("${str}"));`);
   };
 
   initialPlot = (data: Data[], layout?: Layout, config?: Config) => {
@@ -171,7 +150,7 @@ class Plotly extends React.Component<PlotlyProps> {
           ${JSON.stringify(layout)},
           ${JSON.stringify(config)}
         ).then(function() {
-          window.postMessage('${messages.CHART_LOADED}');
+          window.ReactNativeWebView.postMessage('${messages.CHART_LOADED}');
         });
       `);
   };
@@ -207,35 +186,40 @@ class Plotly extends React.Component<PlotlyProps> {
   };
 
   webviewLoaded = () => {
+    // Prevent double load
+    if (this.webviewHasLoaded) return;
+    this.webviewHasLoaded = true;
+
     if (Platform.OS === 'android') {
-      // On iOS these are included a <script> tag
+      // On iOS these are included in a <script> tag
       this.invoke(errorHandlerFn);
-      this.invoke(postMessageHandler);
       if (this.props.debug) {
         this.invoke(debugFn);
       }
     }
 
     // Load plotly
-    this.invokeEncoded(this.props.enableFullPlotly ? PlotlyFull : PlotlyBasic);
+    this.invokeEncoded(PlotlyBasic);
 
     const { data, config, layout } = this.props;
     this.initialPlot(data, layout, config);
   };
 
-  onMessage = (event: NativeSyntheticEvent<WebViewMessageEventData>) => {
-    switch (event.nativeEvent.data) {
+  onMessage = (event: WebViewMessageEvent) => {
+    // event type is messed up :(
+    switch ((event as any).nativeEvent.data) {
       case messages.CHART_LOADED:
         if (this.props.onLoad) this.props.onLoad();
         break;
       default:
         if (this.debug)
-          console.error(`Unknown event ${event.nativeEvent.data}`);
+          console.error(`Unknown event ${(event as any).nativeEvent.data}`);
         break;
     }
   };
 
   componentDidMount() {
+    // TODO: Test on iOS device to see if this is still necessary
     if (Platform.OS === 'ios')
       setTimeout(this.webviewLoaded, IOS_PLOTLY_LOAD_TIME);
   }

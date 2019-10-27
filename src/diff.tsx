@@ -1,5 +1,5 @@
 import { diff } from 'deep-diff';
-import { set } from 'lodash';
+import set from 'lodash.set';
 
 export const getDiff = (
   prev: object | Array<object> | undefined,

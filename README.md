@@ -13,7 +13,10 @@ Under the hood, `react-native-plotly` is just a webview that has `plotly.js` inj
 ## Limitations
 
 - The `plotly.js` code is loaded into the webview using `postMessage`. This adds some latency between when the component is initially rendered, and when you first see the chart (usually 1-3 seconds).
-- Right now, this libarary only supports the [basic bundle](https://github.com/plotly/plotly.js/blob/master/dist/README.md#plotlyjs-basic) of plotly.
+
+# Compatability
+
+The latest version of this library depends on react-native-webview. v1.0.0 and below used the webview from react-native.
 
 ## Usage
 
