@@ -1,6 +1,6 @@
 ## react-native-plotly
 
-Use [plotly.js](https://plot.ly/javascript/) in React Native! (plotly.js basic v1.43.2)
+Use [plotly.js](https://plot.ly/javascript/) in React Native! (plotly.js v1.50.1)
 
 ## Installation
 
