@@ -1,6 +1,7 @@
 # Unreleased
 
-Update to use react-native-web (instead of deprecated WebView from react-native package)
+- [BREAKING] Update plotly to v1.50.1
+- [BREAKING] Update to use react-native-web (instead of deprecated WebView from react-native package)
 
 # 1.0.0
 

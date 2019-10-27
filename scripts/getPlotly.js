@@ -18,7 +18,7 @@ function downloadPlotly(path, name) {
           const fileContent = `const content = \`${b64Data}\`;\nexport default content;\n`;
           fs.writeFile(`src/lib/${name}.ts`, fileContent, err => {
             if (err) reject(err);
-            else resolve();
+            else resolve(data);
           });
         });
       })
@@ -30,9 +30,12 @@ function downloadPlotly(path, name) {
 
 function main() {
   return Promise.all([
-    downloadPlotly('plotly-basic-latest.min.js', 'PlotlyBasic'),
     downloadPlotly('plotly-latest.min.js', 'PlotlyFull'),
-  ]);
+    downloadPlotly('plotly-basic-latest.min.js', 'PlotlyBasic'),
+  ]).then(([s]) => {
+    const v = s.slice(17, 26);
+    console.log(`Updated to version ${v}`);
+  });
 }
 
 main()
