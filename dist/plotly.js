@@ -1,7 +1,7 @@
-import * as React from 'react';
-import { StyleSheet, WebView, Platform, } from 'react-native';
+import React from 'react';
+import { StyleSheet, Platform } from 'react-native';
+import { WebView } from 'react-native-webview';
 import PlotlyBasic from './lib/PlotlyBasic';
-import PlotlyFull from './lib/PlotlyFull';
 import { getDiff } from './diff';
 /*
 Base 64 encode source code
@@ -18,16 +18,6 @@ const errorHandlerFn = `
     document.getElementById('error').innerHTML += message + '\\n';
   };
 `;
-const postMessageHandler = `
-  document.addEventListener(
-    'message',
-    function(event) {
-      const decoded = atob(event.data);
-      eval(decoded);
-    },
-    false
-  );
-`;
 const debugFn = `
   window.DEBUG = function(message) {
     document.getElementById('debug').innerHTML += message + '\\n';
@@ -37,6 +27,8 @@ class Plotly extends React.Component {
     constructor() {
         super(...arguments);
         this.chart = React.createRef();
+        this.webviewHasLoaded = false;
+        this.plotlyHasLoaded = false;
         // As of 2/5/2019 it seems that using a # in the html causes the css
         // parsing to crash on Android
         this.html = `
@@ -84,12 +76,10 @@ class Plotly extends React.Component {
       <pre id="error" class="error"></pre>
       <pre id="debug" class="debug"></pre>
     </body>
-
     <script>
       /* This only runs on iOS, on android it is posted */
       ${errorHandlerFn}
       ${debugFn}
-      ${postMessageHandler}
     </script>
     </html>
     `;
@@ -101,8 +91,7 @@ class Plotly extends React.Component {
                 this.chart.current.injectJavaScript(`(function(){${str}})()`);
         };
         this.invokeEncoded = (str) => {
-            if (this.chart && this.chart.current)
-                this.chart.current.postMessage(str);
+            this.invoke(`eval(atob("${str}"));`);
         };
         this.initialPlot = (data, layout, config) => {
             this.invoke(`
@@ -112,7 +101,7 @@ class Plotly extends React.Component {
           ${JSON.stringify(layout)},
           ${JSON.stringify(config)}
         ).then(function() {
-          window.postMessage('${messages.CHART_LOADED}');
+          window.ReactNativeWebView.postMessage('${messages.CHART_LOADED}');
         });
       `);
         };
@@ -144,20 +133,24 @@ class Plotly extends React.Component {
       `);
         };
         this.webviewLoaded = () => {
+            // Prevent double load
+            if (this.webviewHasLoaded)
+                return;
+            this.webviewHasLoaded = true;
             if (Platform.OS === 'android') {
-                // On iOS these are included a <script> tag
+                // On iOS these are included in a <script> tag
                 this.invoke(errorHandlerFn);
-                this.invoke(postMessageHandler);
                 if (this.props.debug) {
                     this.invoke(debugFn);
                 }
             }
             // Load plotly
-            this.invokeEncoded(this.props.enableFullPlotly ? PlotlyFull : PlotlyBasic);
+            this.invokeEncoded(PlotlyBasic);
             const { data, config, layout } = this.props;
             this.initialPlot(data, layout, config);
         };
         this.onMessage = (event) => {
+            // event type is messed up :(
             switch (event.nativeEvent.data) {
                 case messages.CHART_LOADED:
                     if (this.props.onLoad)
@@ -171,6 +164,7 @@ class Plotly extends React.Component {
         };
     }
     componentDidMount() {
+        // TODO: Test on iOS device to see if this is still necessary
         if (Platform.OS === 'ios')
             setTimeout(this.webviewLoaded, IOS_PLOTLY_LOAD_TIME);
     }

@@ -1,5 +1,5 @@
 import { diff } from 'deep-diff';
-import { set } from 'lodash';
+import set from 'lodash.set';
 export const getDiff = (prev, cur) => {
     if (prev && cur) {
         if (Array.isArray(cur) && Array.isArray(prev)) {

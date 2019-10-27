@@ -1,5 +1,6 @@
-import * as React from 'react';
-import { WebView, StyleProp, ViewStyle, NativeSyntheticEvent, WebViewMessageEventData } from 'react-native';
+import React from 'react';
+import { StyleProp, ViewStyle } from 'react-native';
+import { WebView } from 'react-native-webview';
 declare type Data = any;
 declare type Layout = any;
 declare type Config = any;
@@ -18,13 +19,14 @@ export interface PlotlyProps {
     layout?: Layout;
     config?: Config;
     update?: (currentProps: UpdateProps, nextProps: UpdateProps, updateFns: UpdateFunctions) => void;
-    debug?: Boolean;
+    debug?: boolean;
     style?: StyleProp<ViewStyle>;
     onLoad?: () => void;
-    enableFullPlotly?: boolean;
 }
 declare class Plotly extends React.Component<PlotlyProps> {
     chart: React.RefObject<WebView>;
+    webviewHasLoaded: boolean;
+    plotlyHasLoaded: boolean;
     html: string;
     debug: (msg: string) => void;
     invoke: (str: string) => void;
@@ -34,7 +36,7 @@ declare class Plotly extends React.Component<PlotlyProps> {
     plotlyRelayout: (layout: any) => void;
     plotlyRestyle: (data: any, i: number) => void;
     webviewLoaded: () => void;
-    onMessage: (event: NativeSyntheticEvent<WebViewMessageEventData>) => void;
+    onMessage: (event: import("react-native").NativeSyntheticEvent<import("react-native-webview/lib/WebViewTypes").WebViewMessage>) => void;
     componentDidMount(): void;
     shouldComponentUpdate(nextProps: PlotlyProps): boolean;
     render(): JSX.Element;
