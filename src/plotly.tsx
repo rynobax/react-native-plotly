@@ -1,18 +1,17 @@
-import React from 'react';
+import React, { useRef, useLayoutEffect } from 'react';
 import { StyleSheet, Platform, StyleProp, ViewStyle } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 
 import PlotlyBasic from './lib/PlotlyBasic';
+import PlotlyFull from './lib/PlotlyFull';
 import { getDiff } from './diff';
 
 /*
 Base 64 encode source code
 Postmessage source code into webview
 Webview decodes and evals
-Plotly is now in the window!
+Plotly is now in the webview!
 */
-
-const IOS_PLOTLY_LOAD_TIME = 1000;
 
 const messages = {
   CHART_LOADED: 'CHART_LOADED',
@@ -21,12 +20,6 @@ const messages = {
 const errorHandlerFn = `
   window.onerror = function(message, source, lineno, colno, error) {
     document.getElementById('error').innerHTML += message + '\\n';
-  };
-`;
-
-const debugFn = `
-  window.DEBUG = function(message) {
-    document.getElementById('debug').innerHTML += message + '\\n';
   };
 `;
 
@@ -65,16 +58,18 @@ export interface PlotlyProps {
   style?: StyleProp<ViewStyle>;
 
   onLoad?: () => void;
+
+  enableFullPlotly?: boolean;
 }
 
-class Plotly extends React.Component<PlotlyProps> {
-  chart = React.createRef<WebView>();
-  webviewHasLoaded = false;
-  plotlyHasLoaded = false;
+const Plotly: React.FC<PlotlyProps> = props => {
+  const lastPropsRef = useRef<PlotlyProps>(props);
+  const chart = useRef<WebView | null>(null);
+  const loadedRef = useRef(false);
 
   // As of 2/5/2019 it seems that using a # in the html causes the css
   // parsing to crash on Android
-  html = `
+  const html = `
     <html>
     <head>
         <meta charset="utf-8">
@@ -90,7 +85,7 @@ class Plotly extends React.Component<PlotlyProps> {
         .chart {
           width: 100vw;
           height: 100vh;
-          ${this.props.debug ? 'background: papayawhip;' : ''}
+          ${props.debug ? 'background: papayawhip;' : ''}
         }
         .error {
           position: fixed;
@@ -122,41 +117,39 @@ class Plotly extends React.Component<PlotlyProps> {
     <script>
       /* This only runs on iOS, on android it is posted */
       ${errorHandlerFn}
-      ${debugFn}
     </script>
     </html>
     `;
 
-  debug = (msg: string) => {
-    this.invoke(
-      `document.getElementById('debug').innerHTML += \`${msg}\` + '\\n';`
-    );
+  const invoke = (str: string) => {
+    if (chart && chart.current)
+      chart.current.injectJavaScript(`(function(){${str}})()`);
   };
 
-  invoke = (str: string) => {
-    if (this.chart && this.chart.current)
-      this.chart.current.injectJavaScript(`(function(){${str}})()`);
+  const invokeEncoded = (str: string) => {
+    invoke(`eval(atob("${str}"));`);
   };
 
-  invokeEncoded = (str: string) => {
-    this.invoke(`eval(atob("${str}"));`);
-  };
+  // Can uncomment and call for debugging purposes
+  // const debug = (msg: string) => {
+  //   invoke(`document.getElementById('debug').innerHTML += \`${msg}\` + '\\n';`);
+  // };
 
-  initialPlot = (data: Data[], layout?: Layout, config?: Config) => {
-    this.invoke(`
+  const initialPlot = (data: Data[], layout?: Layout, config?: Config) => {
+    invoke(`
         window.Plotly.newPlot(
           'chart',
           ${JSON.stringify(data)},
           ${JSON.stringify(layout)},
           ${JSON.stringify(config)}
         ).then(function() {
-          window.ReactNativeWebView.postMessage('${messages.CHART_LOADED}');
+          window.postMessage('${messages.CHART_LOADED}');
         });
       `);
   };
 
-  plotlyReact = (data: Data[], layout?: Layout, config?: Config) => {
-    this.invoke(`
+  const plotlyReact = (data: Data[], layout?: Layout, config?: Config) => {
+    invoke(`
         window.Plotly.react(
           'chart',
           ${JSON.stringify(data)},
@@ -166,8 +159,8 @@ class Plotly extends React.Component<PlotlyProps> {
       `);
   };
 
-  plotlyRelayout = (layout: Layout) => {
-    this.invoke(`
+  const plotlyRelayout = (layout: Layout) => {
+    invoke(`
         window.Plotly.relayout(
           'chart',
           ${JSON.stringify(layout)}
@@ -175,8 +168,8 @@ class Plotly extends React.Component<PlotlyProps> {
       `);
   };
 
-  plotlyRestyle = (data: Data, i: number) => {
-    this.invoke(`
+  const plotlyRestyle = (data: Data, i: number) => {
+    invoke(`
         window.Plotly.restyle(
           'chart',
           ${JSON.stringify(data)},
@@ -185,91 +178,84 @@ class Plotly extends React.Component<PlotlyProps> {
       `);
   };
 
-  webviewLoaded = () => {
-    // Prevent double load
-    if (this.webviewHasLoaded) return;
-    this.webviewHasLoaded = true;
-
+  const webviewLoaded = () => {
     if (Platform.OS === 'android') {
-      // On iOS these are included in a <script> tag
-      this.invoke(errorHandlerFn);
-      if (this.props.debug) {
-        this.invoke(debugFn);
-      }
+      // On iOS this is included in a <script> tag
+      invoke(errorHandlerFn);
     }
 
     // Load plotly
-    this.invokeEncoded(PlotlyBasic);
+    invokeEncoded(props.enableFullPlotly ? PlotlyFull : PlotlyBasic);
 
-    const { data, config, layout } = this.props;
-    this.initialPlot(data, layout, config);
+    const { data, config, layout } = props;
+    initialPlot(data, layout, config);
+
+    loadedRef.current = true;
   };
 
-  onMessage = (event: WebViewMessageEvent) => {
+  const onMessage = (event: WebViewMessageEvent) => {
     // event type is messed up :(
     switch ((event as any).nativeEvent.data) {
       case messages.CHART_LOADED:
-        if (this.props.onLoad) this.props.onLoad();
+        if (props.onLoad) props.onLoad();
         break;
       default:
-        if (this.debug)
+        if (props.debug)
           console.error(`Unknown event ${(event as any).nativeEvent.data}`);
         break;
     }
   };
 
-  componentDidMount() {
-    // TODO: Test on iOS device to see if this is still necessary
-    if (Platform.OS === 'ios')
-      setTimeout(this.webviewLoaded, IOS_PLOTLY_LOAD_TIME);
-  }
+  useLayoutEffect(() => {
+    const lastProps = lastPropsRef.current;
+    lastPropsRef.current = props;
 
-  shouldComponentUpdate(nextProps: PlotlyProps) {
-    if (this.props.update) {
+    // If we haven't done the initial plot we can't update
+    if (!loadedRef.current) return;
+
+    if (props.update) {
       // Let the user call the update functions
-      this.props.update(
+      props.update(
         {
-          data: this.props.data,
-          layout: this.props.layout,
-          config: this.props.config,
+          data: lastProps.data,
+          layout: lastProps.layout,
+          config: lastProps.config,
         },
         {
-          data: nextProps.data,
-          layout: nextProps.layout,
-          config: nextProps.config,
+          data: props.data,
+          layout: props.layout,
+          config: props.config,
         },
         {
-          react: this.plotlyReact,
-          relayout: this.plotlyRelayout,
-          restyle: this.plotlyRestyle,
+          react: plotlyReact,
+          relayout: plotlyRelayout,
+          restyle: plotlyRestyle,
         }
       );
     } else {
       // Default, just use Plotly.react
-      const dataDiff = getDiff(this.props.data, nextProps.data);
+      const dataDiff = getDiff(lastProps.data, props.data);
       if (Array.isArray(dataDiff)) {
         dataDiff.forEach((d, i) => {
-          if (d) this.plotlyRestyle(d, i);
+          if (d) plotlyRestyle(d, i);
         });
       }
-      const layoutDiff = getDiff(this.props.layout, nextProps.layout);
-      if (layoutDiff) this.plotlyRelayout(layoutDiff);
+      const layoutDiff = getDiff(lastProps.layout, props.layout);
+      if (layoutDiff) plotlyRelayout(layoutDiff);
     }
-    return false;
-  }
+  });
 
-  render() {
-    return (
-      <WebView
-        ref={this.chart}
-        source={{ html: this.html }}
-        style={this.props.style || styles.container}
-        onLoad={this.webviewLoaded}
-        onMessage={this.onMessage}
-      />
-    );
-  }
-}
+  return (
+    <WebView
+      ref={chart}
+      source={{ html }}
+      style={props.style || styles.container}
+      onLoad={webviewLoaded}
+      onMessage={onMessage}
+      originWhitelist={['*']}
+    />
+  );
+};
 
 const styles = StyleSheet.create({
   container: { flex: 1 },

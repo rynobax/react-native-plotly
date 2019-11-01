@@ -1,5 +1,9 @@
 # Unreleased
 
+- [BREAKING] Change the way iOS detects that the webview is loaded. It should be better (previously it just used setTimeout)
+- Refactor to function component + hooks
+- Fix enableFullPlotly not being implemented
+
 # 2.0.0
 
 - [BREAKING] Update plotly to v1.50.1
