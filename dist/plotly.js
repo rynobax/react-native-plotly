@@ -1,15 +1,15 @@
-import React from 'react';
+import React, { useRef, useLayoutEffect } from 'react';
 import { StyleSheet, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
 import PlotlyBasic from './lib/PlotlyBasic';
+import PlotlyFull from './lib/PlotlyFull';
 import { getDiff } from './diff';
 /*
 Base 64 encode source code
 Postmessage source code into webview
 Webview decodes and evals
-Plotly is now in the window!
+Plotly is now in the webview!
 */
-const IOS_PLOTLY_LOAD_TIME = 1000;
 const messages = {
     CHART_LOADED: 'CHART_LOADED',
 };
@@ -18,20 +18,13 @@ const errorHandlerFn = `
     document.getElementById('error').innerHTML += message + '\\n';
   };
 `;
-const debugFn = `
-  window.DEBUG = function(message) {
-    document.getElementById('debug').innerHTML += message + '\\n';
-  };
-`;
-class Plotly extends React.Component {
-    constructor() {
-        super(...arguments);
-        this.chart = React.createRef();
-        this.webviewHasLoaded = false;
-        this.plotlyHasLoaded = false;
-        // As of 2/5/2019 it seems that using a # in the html causes the css
-        // parsing to crash on Android
-        this.html = `
+const Plotly = props => {
+    const lastPropsRef = useRef(props);
+    const chart = useRef(null);
+    const loadedRef = useRef(false);
+    // As of 2/5/2019 it seems that using a # in the html causes the css
+    // parsing to crash on Android
+    const html = `
     <html>
     <head>
         <meta charset="utf-8">
@@ -47,7 +40,7 @@ class Plotly extends React.Component {
         .chart {
           width: 100vw;
           height: 100vh;
-          ${this.props.debug ? 'background: papayawhip;' : ''}
+          ${props.debug ? 'background: papayawhip;' : ''}
         }
         .error {
           position: fixed;
@@ -79,34 +72,34 @@ class Plotly extends React.Component {
     <script>
       /* This only runs on iOS, on android it is posted */
       ${errorHandlerFn}
-      ${debugFn}
     </script>
     </html>
     `;
-        this.debug = (msg) => {
-            this.invoke(`document.getElementById('debug').innerHTML += \`${msg}\` + '\\n';`);
-        };
-        this.invoke = (str) => {
-            if (this.chart && this.chart.current)
-                this.chart.current.injectJavaScript(`(function(){${str}})()`);
-        };
-        this.invokeEncoded = (str) => {
-            this.invoke(`eval(atob("${str}"));`);
-        };
-        this.initialPlot = (data, layout, config) => {
-            this.invoke(`
+    const invoke = (str) => {
+        if (chart && chart.current)
+            chart.current.injectJavaScript(`(function(){${str}})()`);
+    };
+    const invokeEncoded = (str) => {
+        invoke(`eval(atob("${str}"));`);
+    };
+    // Can uncomment and call for debugging purposes
+    // const debug = (msg: string) => {
+    //   invoke(`document.getElementById('debug').innerHTML += \`${msg}\` + '\\n';`);
+    // };
+    const initialPlot = (data, layout, config) => {
+        invoke(`
         window.Plotly.newPlot(
           'chart',
           ${JSON.stringify(data)},
           ${JSON.stringify(layout)},
           ${JSON.stringify(config)}
         ).then(function() {
-          window.ReactNativeWebView.postMessage('${messages.CHART_LOADED}');
+          window.postMessage('${messages.CHART_LOADED}');
         });
       `);
-        };
-        this.plotlyReact = (data, layout, config) => {
-            this.invoke(`
+    };
+    const plotlyReact = (data, layout, config) => {
+        invoke(`
         window.Plotly.react(
           'chart',
           ${JSON.stringify(data)},
@@ -114,96 +107,86 @@ class Plotly extends React.Component {
           ${JSON.stringify(config)}
         );
       `);
-        };
-        this.plotlyRelayout = (layout) => {
-            this.invoke(`
+    };
+    const plotlyRelayout = (layout) => {
+        invoke(`
         window.Plotly.relayout(
           'chart',
           ${JSON.stringify(layout)}
         );
       `);
-        };
-        this.plotlyRestyle = (data, i) => {
-            this.invoke(`
+    };
+    const plotlyRestyle = (data, i) => {
+        invoke(`
         window.Plotly.restyle(
           'chart',
           ${JSON.stringify(data)},
           ${i}
         );
       `);
-        };
-        this.webviewLoaded = () => {
-            // Prevent double load
-            if (this.webviewHasLoaded)
-                return;
-            this.webviewHasLoaded = true;
-            if (Platform.OS === 'android') {
-                // On iOS these are included in a <script> tag
-                this.invoke(errorHandlerFn);
-                if (this.props.debug) {
-                    this.invoke(debugFn);
-                }
-            }
-            // Load plotly
-            this.invokeEncoded(PlotlyBasic);
-            const { data, config, layout } = this.props;
-            this.initialPlot(data, layout, config);
-        };
-        this.onMessage = (event) => {
-            // event type is messed up :(
-            switch (event.nativeEvent.data) {
-                case messages.CHART_LOADED:
-                    if (this.props.onLoad)
-                        this.props.onLoad();
-                    break;
-                default:
-                    if (this.debug)
-                        console.error(`Unknown event ${event.nativeEvent.data}`);
-                    break;
-            }
-        };
-    }
-    componentDidMount() {
-        // TODO: Test on iOS device to see if this is still necessary
-        if (Platform.OS === 'ios')
-            setTimeout(this.webviewLoaded, IOS_PLOTLY_LOAD_TIME);
-    }
-    shouldComponentUpdate(nextProps) {
-        if (this.props.update) {
+    };
+    const webviewLoaded = () => {
+        if (Platform.OS === 'android') {
+            // On iOS this is included in a <script> tag
+            invoke(errorHandlerFn);
+        }
+        // Load plotly
+        invokeEncoded(props.enableFullPlotly ? PlotlyFull : PlotlyBasic);
+        const { data, config, layout } = props;
+        initialPlot(data, layout, config);
+        loadedRef.current = true;
+    };
+    const onMessage = (event) => {
+        // event type is messed up :(
+        switch (event.nativeEvent.data) {
+            case messages.CHART_LOADED:
+                if (props.onLoad)
+                    props.onLoad();
+                break;
+            default:
+                if (props.debug)
+                    console.error(`Unknown event ${event.nativeEvent.data}`);
+                break;
+        }
+    };
+    useLayoutEffect(() => {
+        const lastProps = lastPropsRef.current;
+        lastPropsRef.current = props;
+        // If we haven't done the initial plot we can't update
+        if (!loadedRef.current)
+            return;
+        if (props.update) {
             // Let the user call the update functions
-            this.props.update({
-                data: this.props.data,
-                layout: this.props.layout,
-                config: this.props.config,
+            props.update({
+                data: lastProps.data,
+                layout: lastProps.layout,
+                config: lastProps.config,
             }, {
-                data: nextProps.data,
-                layout: nextProps.layout,
-                config: nextProps.config,
+                data: props.data,
+                layout: props.layout,
+                config: props.config,
             }, {
-                react: this.plotlyReact,
-                relayout: this.plotlyRelayout,
-                restyle: this.plotlyRestyle,
+                react: plotlyReact,
+                relayout: plotlyRelayout,
+                restyle: plotlyRestyle,
             });
         }
         else {
             // Default, just use Plotly.react
-            const dataDiff = getDiff(this.props.data, nextProps.data);
+            const dataDiff = getDiff(lastProps.data, props.data);
             if (Array.isArray(dataDiff)) {
                 dataDiff.forEach((d, i) => {
                     if (d)
-                        this.plotlyRestyle(d, i);
+                        plotlyRestyle(d, i);
                 });
             }
-            const layoutDiff = getDiff(this.props.layout, nextProps.layout);
+            const layoutDiff = getDiff(lastProps.layout, props.layout);
             if (layoutDiff)
-                this.plotlyRelayout(layoutDiff);
+                plotlyRelayout(layoutDiff);
         }
-        return false;
-    }
-    render() {
-        return (<WebView ref={this.chart} source={{ html: this.html }} style={this.props.style || styles.container} onLoad={this.webviewLoaded} onMessage={this.onMessage}/>);
-    }
-}
+    });
+    return (<WebView ref={chart} source={{ html }} style={props.style || styles.container} onLoad={webviewLoaded} onMessage={onMessage} originWhitelist={['*']}/>);
+};
 const styles = StyleSheet.create({
     container: { flex: 1 },
 });

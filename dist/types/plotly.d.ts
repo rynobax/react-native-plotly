@@ -1,6 +1,5 @@
 import React from 'react';
 import { StyleProp, ViewStyle } from 'react-native';
-import { WebView } from 'react-native-webview';
 declare type Data = any;
 declare type Layout = any;
 declare type Config = any;
@@ -22,23 +21,7 @@ export interface PlotlyProps {
     debug?: boolean;
     style?: StyleProp<ViewStyle>;
     onLoad?: () => void;
+    enableFullPlotly?: boolean;
 }
-declare class Plotly extends React.Component<PlotlyProps> {
-    chart: React.RefObject<WebView>;
-    webviewHasLoaded: boolean;
-    plotlyHasLoaded: boolean;
-    html: string;
-    debug: (msg: string) => void;
-    invoke: (str: string) => void;
-    invokeEncoded: (str: string) => void;
-    initialPlot: (data: any[], layout?: any, config?: any) => void;
-    plotlyReact: (data: any[], layout?: any, config?: any) => void;
-    plotlyRelayout: (layout: any) => void;
-    plotlyRestyle: (data: any, i: number) => void;
-    webviewLoaded: () => void;
-    onMessage: (event: import("react-native").NativeSyntheticEvent<import("react-native-webview/lib/WebViewTypes").WebViewMessage>) => void;
-    componentDidMount(): void;
-    shouldComponentUpdate(nextProps: PlotlyProps): boolean;
-    render(): JSX.Element;
-}
+declare const Plotly: React.FC<PlotlyProps>;
 export default Plotly;
