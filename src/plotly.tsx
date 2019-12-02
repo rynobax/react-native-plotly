@@ -104,7 +104,7 @@ const Plotly: React.FC<PlotlyProps> = props => {
           overflow-y: scroll;
           background: rgb(234, 234, 234);
           white-space: pre-wrap;
-          zIndex: 1000;
+          z-index: 1000;
         }
         </style>
     </head>
