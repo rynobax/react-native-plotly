@@ -1,6 +1,6 @@
 # Unreleased
 
-Nothing yet
+- Rename invalid zIndex css property
 
 # 3.0.0
 
