@@ -9,11 +9,11 @@
     "postinstall": "rimraf node_modules/react-native-plotly/node_modules/react-native && rimraf node_modules/react-native-plotly/node_modules/@types && rimraf node_modules/react-native-plotly/node_modules/examples && rimraf node_modules/react-native-plotly/node_modules/react-native-gesture-handler && rimraf node_modules/react-native-plotly/node_modules/react && rimraf node_modules/react-native-plotly/examples"
   },
   "dependencies": {
-    "expo": "^35.0.0",
+    "expo": "^36.0.0",
     "postinstall-postinstall": "^2.0.0",
-    "react": "16.8.3",
-    "react-dom": "16.8.3",
-    "react-native": "https://github.com/expo/react-native/archive/sdk-35.0.0.tar.gz",
+    "react": "16.9.0",
+    "react-dom": "16.9.0",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-36.0.0.tar.gz",
     "react-native-plotly": "file:../..",
     "react-native-web": "^0.11.7",
     "rimraf": "^2.6.3"
