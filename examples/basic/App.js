@@ -1,61 +1,73 @@
-import React from 'react';
-import { StyleSheet, View, Button } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, Button, Text } from 'react-native';
 import Plotly from 'react-native-plotly';
 
-const upData = {
+const upTrace = {
   __id: 'up',
   x: [1, 2, 3, 4, 5],
   y: [1, 2, 3, 4, 8],
   type: 'scatter',
 };
 
-const downData = {
+const downTrace = {
   __id: 'down',
   x: [1, 2, 3, 4, 5],
   y: [8, 4, 3, 2, 1],
   type: 'scatter',
 };
 
-export default class App extends React.Component {
-  state = {
-    data: [upData],
-    layout: { title: 'Plotly.js running in React Native!' },
-  };
+const App = () => {
+  const [trace, setTrace] = useState(upTrace);
+  const [resetKey, setResetKey] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  swapData = () => {
-    if (this.state.data[0].__id === 'up') {
-      this.setState({ data: [downData] });
+  function swapData() {
+    if (trace.__id === 'up') {
+      setTrace(downTrace);
     } else {
-      this.setState({ data: [upData] });
+      setTrace(upTrace);
     }
-  };
+  }
 
-  update = (_, { data, layout, config }, plotly) => {
+  const update = (_, { data, layout, config }, plotly) => {
     plotly.react(data, layout, config);
   };
 
-  render() {
-    return (
-      <View style={styles.container}>
-        <View style={styles.buttonRow}>
-          <Button onPress={this.swapData} title="Swap Data" />
-        </View>
-        <View style={styles.chartRow}>
-          <Plotly
-            data={this.state.data}
-            layout={this.state.layout}
-            update={this.update}
-            onLoad={() => console.log('loaded')}
-            debug
-          />
-        </View>
-      </View>
-    );
+  function reset() {
+    setLoading(true);
+    setResetKey(resetKey + 1);
   }
-}
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.buttonRow}>
+        <Button onPress={swapData} title="Swap Data" />
+      </View>
+      <View style={styles.loadingRow}>
+        <Text>{loading ? 'Loading' : 'Finished Loading'}</Text>
+      </View>
+      <View style={styles.chartRow}>
+        <Plotly
+          data={[trace]}
+          layout={{ title: 'Plotly.js running in React Native!' }}
+          update={update}
+          onLoad={() => setLoading(false)}
+          debug
+          key={resetKey}
+        />
+      </View>
+      <View style={styles.buttonRow}>
+        <Button onPress={reset} title="Force chart rerender" />
+      </View>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   buttonRow: {
+    flexDirection: 'row',
+  },
+  loadingRow: {
     flexDirection: 'row',
   },
   chartRow: {
@@ -71,3 +83,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+
+export default App;
