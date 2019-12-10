@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Button } from 'react-native';
+import { StyleSheet, View, Button, Text } from 'react-native';
 import Plotly from 'react-native-plotly';
 
 const upTrace = {
@@ -18,6 +18,8 @@ const downTrace = {
 
 const App = () => {
   const [trace, setTrace] = useState(upTrace);
+  const [resetKey, setResetKey] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   function swapData() {
     if (trace.__id === 'up') {
@@ -31,19 +33,31 @@ const App = () => {
     plotly.react(data, layout, config);
   };
 
+  function reset() {
+    setLoading(true);
+    setResetKey(resetKey + 1);
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.buttonRow}>
         <Button onPress={swapData} title="Swap Data" />
+      </View>
+      <View style={styles.loadingRow}>
+        <Text>{loading ? 'Loading' : 'Finished Loading'}</Text>
       </View>
       <View style={styles.chartRow}>
         <Plotly
           data={[trace]}
           layout={{ title: 'Plotly.js running in React Native!' }}
           update={update}
-          onLoad={() => console.log('loaded')}
+          onLoad={() => setLoading(false)}
           debug
+          key={resetKey}
         />
+      </View>
+      <View style={styles.buttonRow}>
+        <Button onPress={reset} title="Force chart rerender" />
       </View>
     </View>
   );
@@ -51,6 +65,9 @@ const App = () => {
 
 const styles = StyleSheet.create({
   buttonRow: {
+    flexDirection: 'row',
+  },
+  loadingRow: {
     flexDirection: 'row',
   },
   chartRow: {
