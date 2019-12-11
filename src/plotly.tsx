@@ -143,7 +143,7 @@ const Plotly: React.FC<PlotlyProps> = props => {
           ${JSON.stringify(layout)},
           ${JSON.stringify(config)}
         ).then(function() {
-          window.postMessage('${messages.CHART_LOADED}');
+          window.ReactNativeWebView.postMessage('${messages.CHART_LOADED}');
         });
       `);
   };
