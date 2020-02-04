@@ -22,5 +22,7 @@
     "noImplicitAny": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
-  }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["src/**/*.test.ts"]
 }
