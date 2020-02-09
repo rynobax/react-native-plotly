@@ -1,6 +1,7 @@
 # Unreleased
 
 - Rename invalid zIndex css property
+- Switch from buggy diffing algorithm to Plotly.react
 
 # 3.0.0
 
