@@ -10,7 +10,8 @@
     "update-plotly": "node scripts/getPlotly.js",
     "dev": "cd examples/basic && yarn && expo start",
     "precommit": "lint-staged",
-    "release": "np"
+    "release": "np",
+    "test": "echo \"No tests yet\""
   },
   "keywords": [
     "react-native",
