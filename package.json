@@ -1,6 +1,6 @@
 {
   "name": "react-native-plotly",
-  "version": "3.0.1-0",
+  "version": "4.0.0",
   "description": "Plotly.js in a react native webview",
   "main": "dist/index.js",
   "typings": "dist/types/index.d.ts",
