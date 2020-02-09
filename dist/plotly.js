@@ -3,7 +3,6 @@ import { StyleSheet, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
 import PlotlyBasic from './lib/PlotlyBasic';
 import PlotlyFull from './lib/PlotlyFull';
-import { getDiff } from './diff';
 /*
 Base 64 encode source code
 Postmessage source code into webview
@@ -173,16 +172,7 @@ const Plotly = props => {
         }
         else {
             // Default, just use Plotly.react
-            const dataDiff = getDiff(lastProps.data, props.data);
-            if (Array.isArray(dataDiff)) {
-                dataDiff.forEach((d, i) => {
-                    if (d)
-                        plotlyRestyle(d, i);
-                });
-            }
-            const layoutDiff = getDiff(lastProps.layout, props.layout);
-            if (layoutDiff)
-                plotlyRelayout(layoutDiff);
+            plotlyReact(props.data, props.layout, props.config);
         }
     });
     return (<WebView ref={chart} source={{ html }} style={props.style || styles.container} onLoad={webviewLoaded} onMessage={onMessage} originWhitelist={['*']}/>);
