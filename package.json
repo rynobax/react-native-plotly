@@ -10,8 +10,7 @@
     "update-plotly": "node scripts/getPlotly.js",
     "dev": "cd examples/basic && yarn && expo start",
     "precommit": "lint-staged",
-    "release": "np",
-    "test": "jest"
+    "release": "np"
   },
   "keywords": [
     "react-native",
@@ -24,18 +23,15 @@
   "license": "MIT",
   "dependencies": {},
   "devDependencies": {
-    "@types/jest": "^25.1.1",
     "@types/react": "^16.9.9",
     "@types/react-native": "^0.60.21",
     "husky": "^4.2.1",
-    "jest": "^25.1.0",
     "lint-staged": "^10.0.7",
     "np": "^5.2.1",
     "prettier": "^1.19.1",
     "react": "^16.10.2",
     "react-native": "^0.61.2",
     "react-native-webview": "7.4.3",
-    "ts-jest": "^25.2.0",
     "tslint": "^5.12.1",
     "tslint-react": "^3.6.0",
     "typescript": "^3.6.4"
