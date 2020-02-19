@@ -53,7 +53,7 @@ render() {
 | debug?            | boolean          | If true, if any errors occur in the webview, they will show up on the chart                                                                                      |
 | update?           | fn()             | described below                                                                                                                                                  |
 
-By default, every time the Plotly component's props change, the `data`, `layout`, and `config` props are all diffed with their previous values, and if there is a difference `restyle` and/or `relayout` are called.
+By default, every time the Plotly component's props change, the chart is updated using [Plotly.react](https://plot.ly/javascript/plotlyjs-function-reference/#plotlyreact).
 If you want to override this behavior, you can pass a function as the `update` prop, and manually call the plotly update functions. The `update` function signature is:
 
 ```ts
