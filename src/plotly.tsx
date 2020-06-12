@@ -61,7 +61,7 @@ export interface PlotlyProps {
   enableFullPlotly?: boolean;
 }
 
-const Plotly: React.FC<PlotlyProps> = props => {
+const Plotly: React.FC<PlotlyProps> = (props) => {
   const lastPropsRef = useRef<PlotlyProps>(props);
   const chart = useRef<WebView | null>(null);
   const loadedRef = useRef(false);
