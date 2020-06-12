@@ -7,7 +7,7 @@
     "declarationDir": "dist/types",
     "sourceMap": true,
     "jsx": "react-native",
-    "lib": ["dom", "es2015", "es2016"],
+    "lib": ["dom", "es2017"],
     "allowSyntheticDefaultImports": true,
     "moduleResolution": "node",
     "baseUrl": "src/",

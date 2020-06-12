@@ -26,16 +26,14 @@
   "devDependencies": {
     "@types/react": "^16.9.9",
     "@types/react-native": "^0.60.21",
-    "husky": "^4.2.1",
-    "lint-staged": "^10.0.7",
-    "np": "^5.2.1",
-    "prettier": "^1.19.1",
+    "husky": "^4.2.5",
+    "lint-staged": "^10.2.10",
+    "np": "^6.2.4",
+    "prettier": "^2.0.5",
     "react": "^16.10.2",
     "react-native": "^0.61.2",
     "react-native-webview": "7.4.3",
-    "tslint": "^5.12.1",
-    "tslint-react": "^3.6.0",
-    "typescript": "^3.6.4"
+    "typescript": "^3.9.5"
   },
   "peerDependencies": {
     "react": "*",
