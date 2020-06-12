@@ -17,7 +17,7 @@ const errorHandlerFn = `
     document.getElementById('error').innerHTML += message + '\\n';
   };
 `;
-const Plotly = props => {
+const Plotly = (props) => {
     const lastPropsRef = useRef(props);
     const chart = useRef(null);
     const loadedRef = useRef(false);
