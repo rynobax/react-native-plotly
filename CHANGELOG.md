@@ -2,6 +2,11 @@
 
 - Nothing yet
 
+# 5.0.0
+
+- Update to Expo 41
+- Update Plotly to 1.58.4
+
 # 4.0.0
 
 - Rename invalid zIndex css property
