@@ -28,7 +28,7 @@
     "@types/react-native": "^0.63.50",
     "husky": "^4.2.5",
     "lint-staged": "^10.2.10",
-    "np": "^6.2.4",
+    "np": "^7.5.0",
     "prettier": "^2.0.5",
     "react": "^16.13.1",
     "react-native": "^0.63.4",
