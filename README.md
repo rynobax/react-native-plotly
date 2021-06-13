@@ -16,7 +16,7 @@ Under the hood, `react-native-plotly` is just a webview that has `plotly.js` inj
 
 # Compatability
 
-The latest version of this library depends on react-native-webview (tested with v7.4.3). v1.0.0 of this library and below used the webview from react-native.
+The latest version of this library depends on react-native-webview (tested with v11.2.3). v1.0.0 of this library and below used the webview from react-native.
 
 ## Usage
 
