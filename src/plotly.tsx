@@ -237,10 +237,9 @@ const Plotly: React.FC<PlotlyProps> = (props) => {
     }
   });
 
-  console.log('test');
   return (
     <WebView
-      ref={(wv) => (chart.current = wv)}
+      ref={chart}
       source={{ html }}
       style={props.style || styles.container}
       onLoad={webviewLoaded}
