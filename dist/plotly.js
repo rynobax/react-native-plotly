@@ -175,8 +175,7 @@ const Plotly = (props) => {
             plotlyReact(props.data, props.layout, props.config);
         }
     });
-    console.log('test');
-    return (<WebView ref={(wv) => (chart.current = wv)} source={{ html }} style={props.style || styles.container} onLoad={webviewLoaded} onMessage={onMessage} originWhitelist={['*']}/>);
+    return (<WebView ref={chart} source={{ html }} style={props.style || styles.container} onLoad={webviewLoaded} onMessage={onMessage} originWhitelist={['*']}/>);
 };
 const styles = StyleSheet.create({
     container: { flex: 1 },
