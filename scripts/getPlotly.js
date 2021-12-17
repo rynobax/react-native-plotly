@@ -4,11 +4,11 @@ const fs = require('fs');
 function downloadPlotly(path, name) {
   return new Promise((resolve, reject) => {
     https
-      .get(`https://cdn.plot.ly/${path}`, resp => {
+      .get(`https://cdn.plot.ly/${path}`, (resp) => {
         let data = '';
 
         // A chunk of data has been recieved.
-        resp.on('data', chunk => {
+        resp.on('data', (chunk) => {
           data += chunk;
         });
 
@@ -16,13 +16,13 @@ function downloadPlotly(path, name) {
         resp.on('end', () => {
           const b64Data = Buffer.from(data).toString('base64');
           const fileContent = `const content = \`${b64Data}\`;\nexport default content;\n`;
-          fs.writeFile(`src/lib/${name}.ts`, fileContent, err => {
+          fs.writeFile(`src/lib/${name}.ts`, fileContent, (err) => {
             if (err) reject(err);
             else resolve(data);
           });
         });
       })
-      .on('error', err => {
+      .on('error', (err) => {
         reject(err);
       });
   });
@@ -30,8 +30,8 @@ function downloadPlotly(path, name) {
 
 function main() {
   return Promise.all([
-    downloadPlotly('plotly-latest.min.js', 'PlotlyFull'),
-    downloadPlotly('plotly-basic-latest.min.js', 'PlotlyBasic'),
+    downloadPlotly('plotly-2.8.1.min.js', 'PlotlyFull'),
+    downloadPlotly('plotly-basic-2.8.1.min.js', 'PlotlyBasic'),
   ]).then(([s]) => {
     const v = s.slice(17, 26);
     console.log(`Updated to version ${v}`);
@@ -40,7 +40,7 @@ function main() {
 
 main()
   .then(() => console.log('Finished!'))
-  .catch(err => {
+  .catch((err) => {
     console.error(err);
     process.exit(1);
   });
