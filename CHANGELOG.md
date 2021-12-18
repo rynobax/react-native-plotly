@@ -2,6 +2,11 @@
 
 - Nothing yet
 
+# 6.0.0
+
+- Update to Expo 44
+- Update Plotly to 2.8.1
+
 # 5.0.0
 
 - Update to Expo 41
