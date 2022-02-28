@@ -107,7 +107,7 @@ const Plotly: React.FC<PlotlyProps> = (props) => {
         }
         </style>
     </head>
-    
+
     <body >
       <div id="chart" class="chart"></div>
       <pre id="error" class="error"></pre>
@@ -245,6 +245,7 @@ const Plotly: React.FC<PlotlyProps> = (props) => {
       onLoad={webviewLoaded}
       onMessage={onMessage}
       originWhitelist={['*']}
+      androidLayerType={'software'}
     />
   );
 };
